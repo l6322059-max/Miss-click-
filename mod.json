@@ -1,6 +1,11 @@
 {
   "geode": "v5.11.2",
-  "gd": "2.2081",
+  "gd": {
+    "android": "2.2081",
+    "win": "2.2081",
+    "mac": "2.2081",
+    "ios": "2.2081"
+  },
   "id": "yap_tap.miss-click-manager",
   "name": "Geode Miss-Click Manager",
   "version": "v1.0.0",
