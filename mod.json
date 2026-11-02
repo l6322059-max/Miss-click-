@@ -1,0 +1,9 @@
+{
+  "geode": "v5.11.2",
+  "gd": "2.2081",
+  "id": "your-name.miss-click-manager",
+  "name": "Geode Miss-Click Manager",
+  "version": "v1.0.0",
+  "developer": "Your Name",
+  "description": "Counts and manages misclicks while you play Geometry Dash."
+}
