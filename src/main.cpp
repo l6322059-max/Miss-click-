@@ -1,4 +1,5 @@
 #include <Geode/Geode.hpp>
+#include <Geode/modify/GJBaseGameLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <chrono>
 #include <string>
@@ -6,65 +7,51 @@
 using namespace geode::prelude;
 
 namespace {
-    using Clock = std::chrono::steady_clock;
+    using SteadyClock = std::chrono::steady_clock;
 
+    // PlayerButton::Jump is 1. Left and right (platformer) are never filtered.
+    constexpr int kJumpButton = 1;
     // How long the counter takes to fade out once its delay is over.
     constexpr float kFadeOutSeconds = 0.4f;
     // Gap between the counter and the edge of the screen.
     constexpr float kEdgePadding = 10.f;
+
+    long long msBetween(SteadyClock::time_point from, SteadyClock::time_point to) {
+        return std::chrono::duration_cast<std::chrono::milliseconds>(to - from).count();
+    }
 }
 
-// A miss-click is a click shortly before you die. How shortly is the
-// "Miss Window" setting. Everything is stored on the PlayLayer, so every
-// level starts counting from zero.
+// Everything is stored on the PlayLayer, so every level starts fresh.
 class $modify(MissClickLayer, PlayLayer) {
+public:
     struct Fields {
-        Clock::time_point m_lastClick;
-        bool m_hasClick = false;
-        bool m_wasDown = false;
-        int m_misses = 0;
+        // Index 0 is player 1, index 1 is player 2.
+        SteadyClock::time_point m_lastAccepted[2];
+        bool m_hasAccepted[2] = {false, false};
+        bool m_held[2] = {false, false};
+        bool m_ignoring[2] = {false, false};
+
+        SteadyClock::time_point m_respawn;
+        bool m_hasRespawn = false;
+
+        int m_ignored = 0;
         CCLabelBMFont* m_label = nullptr;
     };
 
-    // Runs every frame. Notes the moment the jump button goes down.
-    void postUpdate(float dt) {
-        PlayLayer::postUpdate(dt);
-        if (!Mod::get()->getSettingValue<bool>("enabled")) return;
-
-        bool down = (m_player1 && m_player1->buttonDown(PlayerButton::Jump)) ||
-                    (m_player2 && m_player2->buttonDown(PlayerButton::Jump));
-
-        if (down && !m_fields->m_wasDown) {
-            m_fields->m_lastClick = Clock::now();
-            m_fields->m_hasClick = true;
-        }
-        m_fields->m_wasDown = down;
-    }
-
-    void destroyPlayer(PlayerObject* player, GameObject* object) {
-        PlayLayer::destroyPlayer(player, object);
-        if (!Mod::get()->getSettingValue<bool>("enabled")) return;
-        if (!m_fields->m_hasClick) return;
-
-        // One click can only cause one miss, even if both players die.
-        m_fields->m_hasClick = false;
-
-        auto windowMs = Mod::get()->getSettingValue<int64_t>("miss-window");
-        auto sinceClick = std::chrono::duration_cast<std::chrono::milliseconds>(
-            Clock::now() - m_fields->m_lastClick
-        ).count();
-
-        if (sinceClick <= windowMs) {
-            this->showMiss();
-        }
-    }
-
     void resetLevel() {
         PlayLayer::resetLevel();
-        m_fields->m_hasClick = false;
+
+        // A new attempt starts with a clean slate.
+        for (int i = 0; i < 2; i++) {
+            m_fields->m_hasAccepted[i] = false;
+            m_fields->m_held[i] = false;
+            m_fields->m_ignoring[i] = false;
+        }
+        m_fields->m_respawn = SteadyClock::now();
+        m_fields->m_hasRespawn = true;
 
         if (Mod::get()->getSettingValue<bool>("reset-on-restart")) {
-            m_fields->m_misses = 0;
+            m_fields->m_ignored = 0;
             if (m_fields->m_label) {
                 m_fields->m_label->stopAllActions();
                 m_fields->m_label->setVisible(false);
@@ -72,10 +59,62 @@ class $modify(MissClickLayer, PlayLayer) {
         }
     }
 
-    // Adds one miss and shows the counter in the game's own font.
-    void showMiss() {
+    // Returns true when this button event is a miss-click and should be dropped.
+    bool mcShouldIgnore(bool down, int button, bool isPlayer1) {
+        if (button != kJumpButton) return false;
+
         auto mod = Mod::get();
-        m_fields->m_misses++;
+        if (!mod->getSettingValue<bool>("enabled")) return false;
+
+        int i = isPlayer1 ? 0 : 1;
+
+        if (!down) {
+            // A release the game is waiting for always goes through.
+            if (m_fields->m_held[i]) {
+                m_fields->m_held[i] = false;
+                return false;
+            }
+            // The release of a click we ignored is dropped too.
+            if (m_fields->m_ignoring[i]) {
+                m_fields->m_ignoring[i] = false;
+                return true;
+            }
+            return false;
+        }
+
+        auto now = SteadyClock::now();
+        bool ignore = false;
+
+        auto grace = mod->getSettingValue<int64_t>("respawn-grace");
+        if (grace > 0 && m_fields->m_hasRespawn &&
+            msBetween(m_fields->m_respawn, now) < grace) {
+            ignore = true;
+        }
+
+        auto gap = mod->getSettingValue<int64_t>("min-click-gap");
+        if (!ignore && gap > 0 && m_fields->m_hasAccepted[i] &&
+            msBetween(m_fields->m_lastAccepted[i], now) < gap) {
+            ignore = true;
+        }
+
+        if (ignore) {
+            m_fields->m_ignoring[i] = true;
+            m_fields->m_ignored++;
+            this->mcShowCounter();
+            return true;
+        }
+
+        m_fields->m_ignoring[i] = false;
+        m_fields->m_held[i] = true;
+        m_fields->m_lastAccepted[i] = now;
+        m_fields->m_hasAccepted[i] = true;
+        return false;
+    }
+
+    // Shows "Ignored Clicks: N" in the game's own font, then fades it away.
+    void mcShowCounter() {
+        auto mod = Mod::get();
+        if (!mod->getSettingValue<bool>("show-counter")) return;
 
         if (!m_fields->m_label) {
             auto created = CCLabelBMFont::create("", "bigFont.fnt");
@@ -96,7 +135,7 @@ class $modify(MissClickLayer, PlayLayer) {
             top ? win.height - kEdgePadding : kEdgePadding
         });
         label->setScale(static_cast<float>(mod->getSettingValue<double>("scale")));
-        label->setString(("Miss Clicks: " + std::to_string(m_fields->m_misses)).c_str());
+        label->setString(("Ignored Clicks: " + std::to_string(m_fields->m_ignored)).c_str());
 
         // Show it, then fade it away unless "Always Show" is on.
         auto opacity = static_cast<unsigned char>(
@@ -115,3 +154,18 @@ class $modify(MissClickLayer, PlayLayer) {
         }
     }
 };
+
+// Geode has no handleButton hook on macOS, so the filter only exists on
+// Windows and Android. On a Mac the mod still builds and just does nothing.
+#if defined(GEODE_IS_WINDOWS) || defined(GEODE_IS_ANDROID)
+class $modify(MissClickInput, GJBaseGameLayer) {
+    void handleButton(bool down, int button, bool isPlayer1) {
+        auto layer = PlayLayer::get();
+        if (layer && static_cast<GJBaseGameLayer*>(layer) == this) {
+            auto self = static_cast<MissClickLayer*>(layer);
+            if (self->mcShouldIgnore(down, button, isPlayer1)) return;
+        }
+        GJBaseGameLayer::handleButton(down, button, isPlayer1);
+    }
+};
+#endif
