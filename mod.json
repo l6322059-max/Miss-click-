@@ -8,7 +8,66 @@
   },
   "id": "yap_tap.miss-click-manager",
   "name": "Geode Miss-Click Manager",
-  "version": "v1.0.0",
+  "version": "v1.1.0",
   "developer": "yap_tap",
-  "description": "Counts and manages misclicks while you play Geometry Dash."
+  "description": "Shows a classic Geometry Dash style counter when you die right after a click.",
+  "settings": {
+    "enabled": {
+      "type": "bool",
+      "name": "Enabled",
+      "description": "Turn the miss-click counter on or off.",
+      "default": true
+    },
+    "miss-window": {
+      "type": "int",
+      "name": "Miss Window (ms)",
+      "description": "A click counts as a miss-click if you die within this many milliseconds after it.",
+      "default": 300,
+      "min": 50,
+      "max": 1000
+    },
+    "fade-time": {
+      "type": "float",
+      "name": "Fade Delay (seconds)",
+      "description": "How long the counter stays on screen before it fades away.",
+      "default": 2.0,
+      "min": 0.5,
+      "max": 10.0
+    },
+    "always-show": {
+      "type": "bool",
+      "name": "Always Show",
+      "description": "Keep the counter on screen instead of letting it fade away.",
+      "default": false
+    },
+    "reset-on-restart": {
+      "type": "bool",
+      "name": "Reset On Restart",
+      "description": "Clear the count and hide the counter every time the attempt restarts.",
+      "default": false
+    },
+    "position": {
+      "type": "string",
+      "name": "Position",
+      "description": "Which corner of the screen the counter appears in.",
+      "default": "Top Left",
+      "one-of": ["Top Left", "Top Right", "Bottom Left", "Bottom Right"]
+    },
+    "scale": {
+      "type": "float",
+      "name": "Size",
+      "description": "How big the counter is.",
+      "default": 0.5,
+      "min": 0.2,
+      "max": 1.5
+    },
+    "opacity": {
+      "type": "int",
+      "name": "Opacity (%)",
+      "description": "How see-through the counter is. 100 is fully solid.",
+      "default": 100,
+      "min": 10,
+      "max": 100
+    }
+  }
 }
