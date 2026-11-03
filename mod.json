@@ -1,30 +1,39 @@
 {
-  "geode": "5.11.2",
-  "gd": {
-    "android": "2.2081",
-    "win": "2.2081",
-    "mac": "2.2081",
-    "ios": "2.2081"
-  },
-  "id": "yap_tap.miss-click-manager",
+  "geode": "v5.11.2",
+  "gd": "2.2081",
+  "id": "your-name.miss-click-manager",
   "name": "Geode Miss-Click Manager",
-  "version": "v1.1.0",
-  "developer": "yap_tap",
-  "description": "Shows a classic Geometry Dash style counter when you die right after a click.",
+  "version": "v1.2.0",
+  "developer": "Your Name",
+  "description": "Ignores accidental extra clicks and shows a classic Geometry Dash style counter when it does.",
   "settings": {
     "enabled": {
       "type": "bool",
       "name": "Enabled",
-      "description": "Turn the miss-click counter on or off.",
+      "description": "Turn the click filter on or off.",
       "default": true
     },
-    "miss-window": {
+    "min-click-gap": {
       "type": "int",
-      "name": "Miss Window (ms)",
-      "description": "A click counts as a miss-click if you die within this many milliseconds after it.",
-      "default": 300,
-      "min": 50,
+      "name": "Click Gap (ms)",
+      "description": "Ignore a click that comes this soon after your previous click. 0 turns this off.",
+      "default": 50,
+      "min": 0,
+      "max": 300
+    },
+    "respawn-grace": {
+      "type": "int",
+      "name": "Respawn Grace (ms)",
+      "description": "Ignore clicks for this long after you respawn. 0 turns this off.",
+      "default": 0,
+      "min": 0,
       "max": 1000
+    },
+    "show-counter": {
+      "type": "bool",
+      "name": "Show Counter",
+      "description": "Show an Ignored Clicks counter when a click is ignored.",
+      "default": true
     },
     "fade-time": {
       "type": "float",
@@ -43,7 +52,7 @@
     "reset-on-restart": {
       "type": "bool",
       "name": "Reset On Restart",
-      "description": "Clear the count and hide the counter every time the attempt restarts.",
+      "description": "Clear the counter and hide it every time the attempt restarts.",
       "default": false
     },
     "position": {
