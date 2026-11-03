@@ -8,15 +8,23 @@
   },
   "id": "yap_tap.miss-click-manager",
   "name": "Geode Miss-Click Manager",
-  "version": "v1.2.0",
+  "version": "v1.3.0",
   "developer": "yap_tap",
-  "description": "Ignores accidental extra clicks and shows a classic Geometry Dash style counter when it does.",
+  "description": "Ignores accidental extra taps and saves taps made just before landing, with a classic Geometry Dash style counter.",
   "settings": {
     "enabled": {
       "type": "bool",
       "name": "Enabled",
-      "description": "Turn the click filter on or off.",
+      "description": "Turn the click fixing on or off.",
       "default": true
+    },
+    "early-buffer": {
+      "type": "int",
+      "name": "Early Tap Buffer (ms)",
+      "description": "If you tap this soon before you land, the tap is saved and fires when you land. 0 turns this off.",
+      "default": 100,
+      "min": 0,
+      "max": 300
     },
     "min-click-gap": {
       "type": "int",
@@ -37,21 +45,21 @@
     "show-counter": {
       "type": "bool",
       "name": "Show Counter",
-      "description": "Show an Ignored Clicks counter when a click is ignored.",
+      "description": "Show a Fixed Clicks counter when a click is fixed.",
       "default": true
     },
     "fade-time": {
       "type": "float",
       "name": "Fade Delay (seconds)",
       "description": "How long the counter stays on screen before it fades away.",
-      "default": 2,
+      "default": 2.0,
       "min": 0.5,
-      "max": 10
+      "max": 10.0
     },
     "always-show": {
       "type": "bool",
       "name": "Always Show",
-      "description": "Keep the counter on screen instead of letting it fade away.",
+      "description": "Keep the counter on screen instead of fading it away.",
       "default": false
     },
     "reset-on-restart": {
@@ -65,12 +73,7 @@
       "name": "Position",
       "description": "Which corner of the screen the counter appears in.",
       "default": "Top Left",
-      "one-of": [
-        "Top Left",
-        "Top Right",
-        "Bottom Left",
-        "Bottom Right"
-      ]
+      "one-of": ["Top Left", "Top Right", "Bottom Left", "Bottom Right"]
     },
     "scale": {
       "type": "float",
