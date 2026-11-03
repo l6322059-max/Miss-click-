@@ -1,10 +1,15 @@
 {
-  "geode": "v5.11.2",
-  "gd": "2.2081",
-  "id": "your-name.miss-click-manager",
+  "geode": "5.11.2",
+  "gd": {
+    "android": "2.2081",
+    "win": "2.2081",
+    "mac": "2.2081",
+    "ios": "2.2081"
+  },
+  "id": "yap_tap.miss-click-manager",
   "name": "Geode Miss-Click Manager",
   "version": "v1.2.0",
-  "developer": "Your Name",
+  "developer": "yap_tap",
   "description": "Ignores accidental extra clicks and shows a classic Geometry Dash style counter when it does.",
   "settings": {
     "enabled": {
@@ -39,9 +44,9 @@
       "type": "float",
       "name": "Fade Delay (seconds)",
       "description": "How long the counter stays on screen before it fades away.",
-      "default": 2.0,
+      "default": 2,
       "min": 0.5,
-      "max": 10.0
+      "max": 10
     },
     "always-show": {
       "type": "bool",
@@ -60,7 +65,12 @@
       "name": "Position",
       "description": "Which corner of the screen the counter appears in.",
       "default": "Top Left",
-      "one-of": ["Top Left", "Top Right", "Bottom Left", "Bottom Right"]
+      "one-of": [
+        "Top Left",
+        "Top Right",
+        "Bottom Left",
+        "Bottom Right"
+      ]
     },
     "scale": {
       "type": "float",
