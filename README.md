@@ -1,48 +1,51 @@
 # Miss-Click Manager
 
-A Geode mod for Geometry Dash that filters accidental extra clicks. When it ignores a click, a small counter in the game's own font shows how many clicks were ignored, then fades away.
+A Geode mod for Geometry Dash that fixes miss-clicks. It ignores accidental extra taps and saves taps that come a little too early. A small counter in the game's own font shows how many clicks it has fixed, then fades away by itself.
 
-## What counts as a miss-click
+## What it fixes
 
-The mod cannot tell a badly timed click from a good one, so it filters accidental extra taps:
+- **Accidental extra taps**: a click that comes very soon after your previous click is ignored. The default is 50 ms.
+- **Taps that are too early**: if you tap up to 100 ms before you land, the tap is saved and fires the moment you land. It is meant for cube, ball, robot, and spider modes. It skips ship, UFO, wave, and swing, and it skips taps made on a ring.
+- **Clicks right after you respawn** can be ignored too. This is off by default.
 
-- A click that comes very soon after your previous accepted click is ignored. The default gap is 50 ms.
-- Optionally, clicks shortly after an attempt restart are ignored too. This is off by default.
+Taps that are too late can't be fixed, because by the time they arrive the game has already moved on.
 
-Ignored clicks never reach the game. Filtering works on Windows and Android. On macOS the mod builds, but the click filter is not active.
+This is an input assist. It changes what the game receives, so don't use it for runs you plan to submit as legit records. It works on Windows and Android. On macOS the mod builds but does not fix anything.
 
 ## Settings
 
-Open Geode's mods list, select Miss-Click Manager, and open its settings.
+Open Geode's mods list, pick Miss-Click Manager, and tap the settings button.
 
-- **Enabled**: turn the click filter on or off.
-- **Click Gap (ms)**: ignore a click that comes this soon after your previous accepted click. Set to 0 to disable.
-- **Respawn Grace (ms)**: ignore clicks for this long after an attempt restart. Set to 0 to disable.
-- **Show Counter**: show the Ignored Clicks counter when a click is ignored.
-- **Fade Delay (seconds)**: how long the counter stays on screen before fading.
-- **Always Show**: keep the counter visible instead of fading.
-- **Reset On Restart**: clear the count and hide the counter when an attempt restarts.
-- **Position**: choose the counter's screen corner.
-- **Size** and **Opacity (%)**: adjust the counter's appearance.
+- **Enabled**: turn the click fixing on or off.
+- **Early Tap Buffer (ms)**: how soon before landing a tap still counts. 0 turns this off.
+- **Click Gap (ms)**: ignore a click that comes this soon after your previous click. 0 turns this off.
+- **Respawn Grace (ms)**: ignore clicks for this long after you respawn. 0 turns this off.
+- **Show Counter**: show the Fixed Clicks counter when a click is fixed.
+- **Fade Delay (seconds)**: how long the counter stays on screen before it fades away.
+- **Always Show**: keep the counter on screen instead of fading it.
+- **Reset On Restart**: clear the counter and hide it every time the attempt restarts.
+- **Position**: which corner of the screen the counter appears in.
+- **Size** and **Opacity (%)**: how big and how see-through the counter is.
 
 ## Requirements
 
 - Geometry Dash 2.2081
-- Geode 5.11.2
+- Geode v5.11.2
 
 ## Installing
 
-1. Open the **Actions** tab of this repository and select the latest successful run.
-2. Download the **Build Output** artifact and extract the .geode file from the ZIP.
-3. Install the .geode file through Geode's mod installer, then restart Geometry Dash.
+1. Open the **Actions** tab of this repo and click the latest successful run.
+2. Download the **Build Output** artifact and extract the `.geode` file from the zip.
+3. Put the `.geode` file in your Geode mods folder (the Geode docs at docs.geode-sdk.org explain where that is on your device) and restart Geometry Dash.
 
 ## Building
 
-The workflow in .github/workflows/build.yml builds Windows, macOS, Android 32-bit, and Android 64-bit targets. It packages the build output as a GitHub Actions artifact and runs on each push or manually from the Actions tab.
+The workflow in `.github/workflows/build.yml` builds the mod for Windows, macOS, and Android and packages the results into one `.geode` file. It runs on every push and can also be started by hand from the Actions tab.
 
 ## Project layout
 
-- mod.json: mod metadata, settings, and supported game/Geode versions
-- CMakeLists.txt: build configuration
-- src/main.cpp: click-filter and counter implementation
-- .github/workflows/build.yml: automated build
+- `mod.json`: mod name, ID, version, settings, and the Geode and Geometry Dash versions it targets
+- `CMakeLists.txt`: build configuration
+- `logo.png`: the mod's icon in Geode's mods list
+- `src/main.cpp`: mod code
+- `.github/workflows/build.yml`: automatic build
