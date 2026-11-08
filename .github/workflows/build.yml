@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build the mod
-        uses: geode-sdk/build-geode-mod@main
+        uses: ./.github/actions/build-geode-mod
         with:
           combine: true
           sdk: v5.11.2
